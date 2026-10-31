@@ -46,17 +46,17 @@ Calibration builds a baseline independently for each channel. It uses two passes
 
 For each channel, AURA accumulates its eight calibration samples:
 
-\[
+$$
 S_i = \sum_{k=0}^{7} x_{k,i}
-\]
+$$
 
 The mean is calculated by dividing the sum by eight. In the hardware, division by eight is implemented as an arithmetic right shift by three bits:
 
-\[
+$$
 \mu_i = S_i \texttt{>>>} 3
-\]
+$$
 
-Here, \(x_{k,i}\) is calibration sample \(k\) from channel \(i\), and \(\mu_i\) is that channel's stored mean. Because this is signed integer hardware arithmetic, the result follows arithmetic-right-shift semantics rather than floating-point division.
+Here, $x_{k,i}$ is calibration sample $k$ from channel $i$, and $\mu_i$ is that channel's stored mean. Because this is signed integer hardware arithmetic, the result follows arithmetic-right-shift semantics rather than floating-point division.
 
 The design stores one mean for each of the eight channels in the mean profile.
 
@@ -64,9 +64,9 @@ The design stores one mean for each of the eight channels in the mean profile.
 
 The same calibration samples are streamed again. For each sample, the design subtracts its channel's stored mean, squares the deviation, and adds the result to that channel's running total:
 
-\[
+$$
 SSD_i = \sum_{k=0}^{7}(x_{k,i}-\mu_i)^2
-\]
+$$
 
 The final total is stored in the SSD profile (the RTL may refer to this storage as `variance_profile`). This is an **unnormalized sum of squared deviations**. It is not divided by eight or by seven, and it is not a full variance-covariance calculation.
 
@@ -74,21 +74,21 @@ The final total is stored in the SSD profile (the RTL may refer to this storage 
 
 After calibration, AURA receives a new reading as eight sequential signed bytes, one byte per channel.
 
-For each channel \(i\), it calculates the deviation from the stored mean and squares it:
+For each channel $i$, it calculates the deviation from the stored mean and squares it:
 
-\[
+$$
 d_i = r_i - \mu_i
-\]
+$$
 
-\[
+$$
 d_i^2 = (r_i-\mu_i)^2
-\]
+$$
 
 The channel is marked as anomalous when:
 
-\[
+$$
 d_i^2 > 2 \times SSD_i
-\]
+$$
 
 The comparison is performed independently for each channel. AURA aggregates the channel results: if any channel exceeds its threshold during the reading, the anomaly flag is asserted. The `anomaly_valid` output indicates when the result for the completed eight-byte reading is valid; in the current design it pulses one cycle after the eighth sample is received.
 
