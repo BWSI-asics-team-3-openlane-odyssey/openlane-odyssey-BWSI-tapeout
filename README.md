@@ -1,3 +1,5 @@
+![MIT Beaver Works — Lincoln Laboratory | School of Engineering](docs/images/mit-beaver-works.png)
+
 # AURA: Automated Undercover Risk & Anomaly Detector
 
 MIT Beaver Works Summer Institute (BWSI) — Basics of ASICs  
