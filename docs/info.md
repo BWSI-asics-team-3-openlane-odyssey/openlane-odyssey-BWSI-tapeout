@@ -132,6 +132,23 @@ The Tiny Tapeout wrapper exposes the data and control signals through the standa
 
 The table documents the wrapper-level mapping. For exact cycle-by-cycle control timing, consult the top-level RTL and its testbench; do not infer a complete transaction protocol from the signal names alone.
 
+### How to use
+
+Every control input is a one-clock-cycle pulse, with the data byte on `ui[7:0]` at the same time.
+
+1. Reset with `rst_n` low, then release it.
+2. Pulse `uio[0]` (`calib_start`).
+3. Send 64 calibration bytes (8 samples × 8 channels, one row at a time), then send the same 64 bytes again. Each byte gets a pulse on `uio[1]` (`calib_ld_en`).
+4. Wait for `uo[0]` (`calib_done`) to go high.
+5. Send 8 reading bytes (channel 0 first), each with a pulse on `uio[2]` (`reading_ld_en`).
+6. When `uo[2]` (`anomaly_valid`) pulses, read `uo[1]` (`anomaly_flag`). It holds its value until the next reading finishes.
+
+Notes:
+- Reading bytes are ignored until `calib_done` is high.
+- `calib_start` takes priority over `calib_ld_en` if both are pulsed together.
+- If a reading is interrupted before all 8 bytes are sent, the channel counter is not cleared by `calib_start`. Use `rst_n` to resynchronize.
+
+  
 ## 8. Verification
 
 The project includes testbench-based verification using cocotb and SystemVerilog self-checking tests. These tests exercise the calibration and detection flow and check the design's outputs against expected behavior.
